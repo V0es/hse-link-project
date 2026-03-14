@@ -33,6 +33,25 @@ class APISettings(BaseModel):
     port: int = 8000
 
 
+class CacheSettings(BaseModel):
+    host: str = "redis"
+    port: int = 6379
+    db_num: int = 0
+    link_prefix: str = "link"
+    clicks_prefix: str = "clicks"
+
+
+class CelerySettings(BaseModel):
+    broker_engine: str = "redis"
+    broker_host: str = "redis"
+    broker_port: int = 6379
+    broker_db: int = 1
+
+    @property
+    def broker_url(self) -> str:
+        return f"{self.broker_engine}://{self.broker_host}:{self.broker_port}/{self.broker_db}"
+
+
 class Settings(BaseSettings):
     """
     Настройки приложения
@@ -40,6 +59,8 @@ class Settings(BaseSettings):
 
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     jwt: JWTAuthSettings = Field(default_factory=JWTAuthSettings)
+    cache: CacheSettings = Field(default_factory=CacheSettings)
+    celery: CelerySettings = Field(default_factory=CelerySettings)
 
     model_config = SettingsConfigDict(
         env_file=".env",
