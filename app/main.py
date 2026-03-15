@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 
-from core.config import get_settings
-from core.database import engine
 from fastapi import FastAPI
 
+from app.api_router import api_router
+from app.core.config import get_settings
+from app.core.database import engine
 from app.core.redis import get_redis
 
 
@@ -20,3 +21,5 @@ async def lifespan(app: FastAPI):
 settings = get_settings()
 
 app = FastAPI(lifespan=lifespan)
+
+app.include_router(api_router)

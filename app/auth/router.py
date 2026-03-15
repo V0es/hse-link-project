@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from app.auth.deps import get_user_creds
 from app.auth.repository import SQLUserRepository
 from app.auth.schemas import UserSchema
-from app.auth.utils import encode_jwt, verify_password
+from app.auth.utils import encode_jwt, hash_password, verify_password
 from app.common.deps import get_user_repo
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
@@ -19,7 +19,7 @@ async def register_user(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="User already exists"
         )
-
+    user_creds.password = hash_password(user_creds.password)
     await user_repo.create(user_creds)
     return {"message": "Registered successfully"}
 
@@ -31,7 +31,7 @@ async def login(
     user_repo: SQLUserRepository = Depends(get_user_repo),
 ) -> dict[str, str]:
     user = await user_repo.get_by_username(user_creds.username)
-    if not user or not user_creds.password_hash == user.password_hash:
+    if not user or not verify_password(user_creds.password, user.password_hash):
         raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Incorrect credentials")
     token = encode_jwt({"username": user_creds.username})
 

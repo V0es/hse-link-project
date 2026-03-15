@@ -11,4 +11,4 @@ if TYPE_CHECKING:
 class User(Base):
     username: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(nullable=False)
-    links: Mapped[list[Link]] = relationship(back_populates="user")
+    links: Mapped[list["Link"]] = relationship("Link", back_populates="user")

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class UserSchema(BaseModel):
     username: str
-    password_hash: str
+    password: str
 
 
 class TokenInfo(BaseModel):

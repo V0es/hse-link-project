@@ -13,7 +13,7 @@ class JWTAuthSettings(BaseModel):
 
     algorithm: str = "RS256"
 
-    access_token_expire_minutes: int = 0
+    access_token_expire_minutes: int = 30
 
 
 class DatabaseSettings(BaseModel):
@@ -33,12 +33,18 @@ class APISettings(BaseModel):
     port: int = 8000
 
 
+class AppSettings(BaseModel):
+    link_unused_threshold_days: int = 5
+
+
 class CacheSettings(BaseModel):
     host: str = "redis"
     port: int = 6379
     db_num: int = 0
     link_prefix: str = "link"
     clicks_prefix: str = "clicks"
+    last_used_prefix: str = "last_used"
+    ttl: int = 3600
 
 
 class CelerySettings(BaseModel):
@@ -57,6 +63,7 @@ class Settings(BaseSettings):
     Настройки приложения
     """
 
+    app: AppSettings = Field(default_factory=AppSettings)
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     jwt: JWTAuthSettings = Field(default_factory=JWTAuthSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)

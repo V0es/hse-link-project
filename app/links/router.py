@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 
-from app.auth.deps import get_current_user
 from app.auth.models import User
+from app.common.deps import get_current_user
 from app.links.deps import get_link_service
-from app.links.schemas import LinkCreate
+from app.links.schemas import LinkCreate, LinkSchema, LinkUpdate
 from app.links.service import LinkServive
 
 router = APIRouter(prefix="/links")
@@ -12,10 +12,10 @@ router = APIRouter(prefix="/links")
 
 @router.post("/shorten", response_model=LinkCreate, status_code=status.HTTP_201_CREATED)
 async def create_short_link(
-    link: LinkCreate,
+    link: LinkCreate = Body(),
     link_service: LinkServive = Depends(get_link_service),
     user: User | None = Depends(get_current_user),
-) -> LinkCreate:
+) -> LinkSchema:
     """
     Create short link
     """
@@ -34,31 +34,49 @@ async def redirect_to_original_link(
     return RedirectResponse(original_url)
 
 
-@router.delete("/{short_code}")
-def delete_link(short_code: str):
+@router.delete("/{short_code}", status_code=status.HTTP_200_OK)
+async def delete_link(
+    short_code: str,
+    user: User | None = Depends(get_current_user),
+    link_service: LinkServive = Depends(get_link_service),
+) -> dict[str, str]:
     """
     Delete short link
     """
-    pass
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized"
+        )
+
+    await link_service.delete_link(slug=short_code, user=user)
+
+    return {"message": "link deleted successfully"}
 
 
-@router.put("/{short_code}")
-def update_link(short_code: str):
-    """
-    Update link
-    """
-    pass
+@router.put("/{short_code}", status_code=status.HTTP_200_OK, response_model=LinkUpdate)
+async def update_link(
+    update_schema: LinkUpdate = Body(),
+    user: User | None = Depends(get_current_user),
+    link_service: LinkServive = Depends(get_link_service),
+) -> LinkSchema:
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Only registered users can update their links",
+        )
+    updated = await link_service.update_link(update_schema=update_schema, user=user)
+
+    return updated
 
 
 @router.get("/{short_code}/stats")
-def get_stats(short_code: str):
+async def get_stats(
+    short_code: str,
+    link_service: LinkServive = Depends(get_link_service),
+    user: User | None = Depends(get_current_user),
+):
     """Show stats"""
-    pass
-
-
-@router.post("/shorten")
-def create_link(custom_alias: str):
-    """
-    Create link
-    """
-    pass
+    if not user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    link_stats = await link_service.get_link_stats(short_code, user)
+    return link_stats
