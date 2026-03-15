@@ -21,4 +21,6 @@ class Link(Base):
         server_default=func.now(),
     )
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
-    last_used_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_used_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True, index=True
+    )
