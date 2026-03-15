@@ -13,4 +13,4 @@ RUN uv sync --no-cache
 
 COPY . .
 
-CMD alembic upgrade head
+CMD uv run alembic upgrade head
