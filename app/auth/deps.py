@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Cookie, Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from jwt import InvalidTokenError
 
@@ -17,12 +17,14 @@ async def get_user_creds(credentials: CredsDep) -> UserSchema:
     return user
 
 
-async def get_access_token(request: Request) -> TokenPayload | None:
-    token = request.cookies.get("access_token")
-    if not token:
+async def get_access_token(
+    access_token: Annotated[str | None, Cookie()] = None,
+) -> TokenPayload | None:
+    print("access_token:", access_token)
+    if not access_token:
         return None
     try:
-        payload = decode_jwt(token)
+        payload = decode_jwt(access_token)
         return TokenPayload(**payload)
     except InvalidTokenError:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid token")

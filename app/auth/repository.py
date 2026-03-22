@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.base_repo import AbstractUserRepository
 from app.auth.models import User
 from app.auth.schemas import UserSchema
+from app.auth.utils import hash_password
 
 
 class SQLUserRepository(AbstractUserRepository):
@@ -26,7 +27,10 @@ class SQLUserRepository(AbstractUserRepository):
 
     @override
     async def create(self, user_schema: UserSchema) -> User:
-        user_to_create = User(**user_schema.model_dump())
+        user_schema.password = hash_password(user_schema.password)
+        user_to_create = User(
+            username=user_schema.username, password_hash=user_schema.password
+        )
         self.session.add(user_to_create)
 
         await self.session.commit()

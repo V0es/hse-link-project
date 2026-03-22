@@ -52,7 +52,7 @@ class SQLLinkRepository(AbstractLinkRepository):
 
     @override
     async def delete_by_slug(self, slug: str) -> Link:
-        stmt = delete(Link).where(Link.slug == slug)
+        stmt = delete(Link).where(Link.slug == slug).returning(Link)
         deleted = await self.session.execute(stmt)
         await self.session.commit()
         return deleted.scalar_one()

@@ -52,6 +52,27 @@ openssl rsa -in certs/jwt-private.pem -outform PEM -pubout -out jwt-public.pem
 docker compose up --build
 ```
 
+# Тестирование
+1. **Клонирование репозитория**
+```bash
+# via https
+git clone https://github.com/V0es/hse-link-project.git
+
+# via ssh
+git clone git@github.com:V0es/hse-link-project.git
+
+cd hse-link-project
+```
+2. Синхронизация завистимостей
+```bash
+uv sync
+```
+
+3. Запуск тестов
+```bash
+pytest -v
+```
+
 
 # Описание API
 ## Auth

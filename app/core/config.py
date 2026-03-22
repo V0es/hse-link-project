@@ -58,6 +58,10 @@ class CelerySettings(BaseModel):
         return f"{self.broker_engine}://{self.broker_host}:{self.broker_port}/{self.broker_db}"
 
 
+class TestSettings(BaseModel):
+    db_url: str = "sqlite+aiosqlite:///:memory:"
+
+
 class Settings(BaseSettings):
     """
     Настройки приложения
@@ -68,6 +72,7 @@ class Settings(BaseSettings):
     jwt: JWTAuthSettings = Field(default_factory=JWTAuthSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)
     celery: CelerySettings = Field(default_factory=CelerySettings)
+    test: TestSettings = Field(default_factory=TestSettings)
 
     model_config = SettingsConfigDict(
         env_file=".env",
