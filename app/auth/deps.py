@@ -20,7 +20,6 @@ async def get_user_creds(credentials: CredsDep) -> UserSchema:
 async def get_access_token(
     access_token: Annotated[str | None, Cookie()] = None,
 ) -> TokenPayload | None:
-    print("access_token:", access_token)
     if not access_token:
         return None
     try:

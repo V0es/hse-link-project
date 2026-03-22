@@ -25,5 +25,4 @@ async def test_delete_success(auth_client):
 
     slug = create.json()["slug"]
     response = await auth_client.delete(f"/links/{slug}")
-    print(f"resp_json:{response.json()}")
     assert response.status_code == 200

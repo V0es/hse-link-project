@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse
 from app.auth.models import User
 from app.common.deps import get_current_user
 from app.links.deps import get_link_service
-from app.links.schemas import LinkCreate, LinkSchema, LinkUpdate
+from app.links.schemas import LinkCreate, LinkSchema, LinkStats, LinkUpdate
 from app.links.service import LinkServive
 
 router = APIRouter(prefix="/links")
@@ -53,7 +53,7 @@ async def delete_link(
     return {"message": "link deleted successfully"}
 
 
-@router.put("/{short_code}", status_code=status.HTTP_200_OK, response_model=LinkUpdate)
+@router.put("/{short_code}", status_code=status.HTTP_200_OK, response_model=LinkSchema)
 async def update_link(
     update_schema: LinkUpdate = Body(),
     user: User | None = Depends(get_current_user),
@@ -69,12 +69,12 @@ async def update_link(
     return updated
 
 
-@router.get("/{short_code}/stats")
+@router.get("/{short_code}/stats", status_code=status.HTTP_200_OK)
 async def get_stats(
     short_code: str,
     link_service: LinkServive = Depends(get_link_service),
     user: User | None = Depends(get_current_user),
-):
+) -> LinkStats:
     """Show stats"""
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

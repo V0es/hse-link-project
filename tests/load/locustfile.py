@@ -7,10 +7,9 @@ from tests.conftest import basic_auth_headers
 
 
 class LinkShortenerUser(HttpUser):
-    wait_time = between(1, 3)  # пауза между действиями
+    wait_time = between(1, 3)
 
     def on_start(self):
-        # Регистрируем тестового пользователя
         username = "load_user"
         password = "123"
         self.client.post(
@@ -19,13 +18,12 @@ class LinkShortenerUser(HttpUser):
         login_resp = self.client.post(
             "/auth/login", headers=basic_auth_headers(username, password)
         )
-        # Получаем токен из cookie или ответа
         self.token = login_resp.cookies.get("access_token") or login_resp.json().get(
             "access_token"
         )
         self.headers = {"Cookie": f"access_token={self.token}"}
 
-    @task(5)  # чаще создаём ссылки
+    @task(5)
     def create_link(self):
         payload = {
             "long_url": f"https://example.com/{generate_slug()}",
@@ -33,7 +31,7 @@ class LinkShortenerUser(HttpUser):
         }
         self.client.post("/links/shorten", json=payload, headers=self.headers)
 
-    @task(3)  # редиректы
+    @task(3)
     def redirect_link(self):
         slug = generate_slug()
         self.client.get(f"/{slug}", headers=self.headers, allow_redirects=False)

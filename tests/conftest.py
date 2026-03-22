@@ -14,7 +14,6 @@ from app.core.config import get_settings
 from app.core.database import Base
 from app.links.deps import get_link_repository
 from app.links.repository import SQLLinkRepository
-from app.main import app
 from tests.repos.memory_cache import MemoryCacheRepository
 
 settings = get_settings()
@@ -115,15 +114,13 @@ async def client(app_with_overrides):
 
 @pytest_asyncio.fixture
 async def auth_client(client: AsyncClient):
-    # 1. Регистрируем пользователя
+
     await client.post("/auth/register", headers=basic_auth_headers("test", "123"))
 
-    # 2. Логинимся
     login_resp = await client.post(
         "/auth/login", headers=basic_auth_headers("test", "123")
     )
 
-    # 3. Берем куку из заголовка set-cookie
     token = login_resp.cookies.get("access_token")
     if token:
         client.cookies.set("access_token", token)

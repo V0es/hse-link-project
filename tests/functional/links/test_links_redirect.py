@@ -11,7 +11,6 @@ async def test_redirect_success(client):
         "expires_at": (datetime.now() + timedelta(minutes=5)).isoformat(),
     }
     create = await client.post("/links/shorten", json=payload)
-    print(create.json())
     slug = create.json()["slug"]
 
     response = await client.get(f"/links/{slug}", follow_redirects=False)
