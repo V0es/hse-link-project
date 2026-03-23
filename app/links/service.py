@@ -3,10 +3,12 @@ from datetime import datetime
 from fastapi import HTTPException, status
 
 from app.auth.base_repo import AbstractUserRepository
+from app.auth.exceptions import UserNotFoundException
 from app.auth.models import User
 from app.cache.base_repo import AbstractCacheRepository
 from app.core.config import get_settings
 from app.links.base_repo import AbstractLinkRepository
+from app.links.exceptions import SlugAlreadyExistsException
 from app.links.models import Link
 from app.links.schemas import LinkCreate, LinkSchema, LinkStats, LinkUpdate
 from app.links.utils import generate_slug
@@ -44,16 +46,14 @@ class LinkServive:
         if link_schema.slug:
             slug_exists = await self.link_repo.get_by_slug(link_schema.slug)
             if slug_exists:
-                raise HTTPException(
-                    status.HTTP_400_BAD_REQUEST, detail="Alias already exists"
-                )
+                raise SlugAlreadyExistsException
         else:
             link_schema.slug = generate_slug()
 
         if user:
             user_exists = await self.user_repo.get_by_id(user.id)
             if not user_exists:
-                raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise UserNotFoundException
 
         link = Link(**link_schema.model_dump(), user=user)
 

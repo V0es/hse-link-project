@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 
+from app.auth.exceptions import UserNotFoundException
 from app.auth.models import User
 from app.common.deps import get_current_user
 from app.links.deps import get_link_service
+from app.links.exceptions import SlugAlreadyExistsException
 from app.links.schemas import LinkCreate, LinkSchema, LinkStats, LinkUpdate
 from app.links.service import LinkServive
 
@@ -19,7 +21,14 @@ async def create_short_link(
     """
     Create short link
     """
-    created_link = await link_service.create_short_link(link, user)
+    try:
+        created_link = await link_service.create_short_link(link, user)
+    except SlugAlreadyExistsException:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Alias already exists")
+
+    except UserNotFoundException:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
+
     return created_link
 
 
